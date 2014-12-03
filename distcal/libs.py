@@ -120,9 +120,8 @@ def makeChunks(band):
                 '      Block size: {3} (samples)\n'
                 '                  {4} (s)\n'
                 '      Solution interval: {5} (samples)\n'
-                '      Number of solutions: {6}\n'
-                '      Ionfactor: {7}'.format(dataset, timepersample,
-                trows, blockl, tlen*3600.0, solint, nsols, ionfactor))
+                '      Number of chunks: {6}'.format(dataset, timepersample,
+                trows, blockl, tlen*3600.0, solint, nsols))
 
 
         # Update cellsize and chunk size of parset
@@ -142,7 +141,7 @@ def makeChunks(band):
         for c in range(nsols):
             chunk_obj = Chunk(dataset)
             chunk_obj.chunk = c
-            chunk_obj.outdir = '{1}_temp'.format(os.path.basename(chunk_obj.dataset))
+            chunk_obj.outdir = '{0}_temp'.format(chunk_obj.dataset)
             if not os.path.exists(chunk_obj.outdir):
                 os.mkdir(chunk_obj.outdir)
             if c < chunk_mid_start:
