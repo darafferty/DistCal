@@ -10,7 +10,7 @@ import lofar.parmdb
 import lofar.parameterset
 import pyrap.tables
 import loadbalance
-from .libs import init_logger
+from .libs import init_logger, Band
 
 
 def calibrate(MSFile, parset, skymodel, ncores=6, solint=1, parmdb='instrument',
@@ -27,7 +27,7 @@ def calibrate(MSFile, parset, skymodel, ncores=6, solint=1, parmdb='instrument',
         loglevel=logging.DEBUG)
     lb.sync_import('from distcal.libs import *')
 
-    band = Band(MSFile, outdir, timecorr, block, solint, ionfactor, ncores*len(lb.rc), resume)
+    band = Band(MSFile, outdir, timecorr, block, solint, ionfactor, len(lb.rc), resume)
     chunk_list, chunk_list_full = makeChunks(band)
 
     if chunk_list is None or chunk_list_full is None:
