@@ -389,7 +389,7 @@ class Band(object):
         self.solint = solint
         self.parset = parset
         self.input_parmdb = parmdb
-        self.output_parmdb = parmdb
+        self.output_parmdb = 'instrument'
         self.skymodel = skymodel
 
 
