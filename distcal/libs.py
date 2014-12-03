@@ -124,14 +124,15 @@ def makeChunks(band):
                 '      Number of chunks: {6}'.format(dataset, timepersample,
                 trows, blockl, tlen*3600.0, solint, nsols))
 
-        if not os.path.exists(chunk_obj.outdir):
-            os.mkdir(chunk_obj.outdir)
-        if not os.path.exists(chunk_obj.outdir+'/parmdbs'):
-            os.mkdir(chunk_obj.outdir+'/parmdbs')
-        if not os.path.exists(chunk_obj.outdir+'/state'):
-            os.mkdir(chunk_obj.outdir+'/state')
-        if not os.path.exists(chunk_obj.outdir+'/logs'):
-            os.mkdir(chunk_obj.outdir+'/logs')
+        tempdir = '{0}_temp'.format(dataset)
+        if not os.path.exists(tempdir):
+            os.mkdir(tempdir)
+        if not os.path.exists(tempdir+'/parmdbs'):
+            os.mkdir(tempdir+'/parmdbs')
+        if not os.path.exists(tempdir+'/state'):
+            os.mkdir(tempdir+'/state')
+        if not os.path.exists(tempdir+'/logs'):
+            os.mkdir(tempdir+'/logs')
 
         # Update cellsize and chunk size of parset
         if band.timecorr:
@@ -150,7 +151,7 @@ def makeChunks(band):
         for c in range(nsols):
             chunk_obj = Chunk(dataset)
             chunk_obj.chunk = c
-            chunk_obj.outdir = '{0}_temp'.format(chunk_obj.dataset)
+            chunk_obj.outdir = tempdir
             if c < chunk_mid_start:
                 chunk_obj.trim_start = True
                 chunk_obj.t0 = 0.0 # hours
