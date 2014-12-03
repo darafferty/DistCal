@@ -127,6 +127,8 @@ def makeChunks(band):
         tempdir = '{0}_temp'.format(dataset)
         if not os.path.exists(tempdir):
             os.mkdir(tempdir)
+        elif band.clobber:
+            os.system('rm -rf {0}'.format(tempdir))
         if not os.path.exists(tempdir+'/parmdbs'):
             os.mkdir(tempdir+'/parmdbs')
         if not os.path.exists(tempdir+'/state'):
@@ -214,7 +216,6 @@ def runChunk(chunk):
     # Wrap everything in a try-except block to be sure any exception is caught
     try:
         # Split the dataset into parts
-        log.info('{0}, {1}, {2}, {3}'.format(chunk.dataset, chunk.output, chunk.t0, chunk.t1))
         split_ms(chunk.dataset, chunk.output, chunk.t0, chunk.t1)
 
         # Copy over instrument db to chunk in case it's needed
@@ -229,7 +230,7 @@ def runChunk(chunk):
         # Clean up, copying instrument parmdb for later collection
         subprocess.call('cp -r {0}/instrument {1}'.
             format(chunk.output, chunk.output_instrument), shell=True)
-#         shutil.rmtree(chunk.output)
+        shutil.rmtree(chunk.output)
 
         # Record successful completion
         success_file = chunk.state_file
@@ -273,8 +274,6 @@ def update_parset(parset):
 
 def split_ms(msin, msout, start_out, end_out):
     """Splits an MS between start and end times in hours relative to first time"""
-    if os.path.exists(msout):
-        os.system('rm -rf {0}'.format(msout))
     if os.path.exists(msout):
         os.system('rm -rf {0}'.format(msout))
 
@@ -364,7 +363,7 @@ def collectSols(band, chunk_list):
 class Band(object):
     """The Band object contains parameters needed for each band (MS)."""
     def __init__(self, MSfile, timecorr, block, solint, ionfactor, ncores,
-        resume, parset, skymodel, parmdb):
+        resume, parset, skymodel, parmdb, clobber):
         self.file = MSfile
         self.msname = self.file.split('/')[-1]
         sw = pt.table(self.file + '/SPECTRAL_WINDOW', ack=False)
@@ -391,6 +390,7 @@ class Band(object):
         self.input_parmdb = parmdb
         self.output_parmdb = 'instrument'
         self.skymodel = skymodel
+        self.clobber = clobber
 
 
 class Chunk(object):
