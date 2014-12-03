@@ -36,7 +36,7 @@ def calibrate(MSFile, parset, skymodel, ncores=6, solint=1, parmdb='instrument',
     else:
         if len(chunk_list) > 0:
             for i, chunk in enumerate(chunk_list):
-                chunk.start_delay = i * 10.0 # start delay in seconds to avoid too much disk IO
+                chunk.start_delay = i * 2.0 # start delay in seconds to avoid too much disk IO
             lb.map(runChunk, chunk_list)
 
         collectSols(band, chunk_list_full)
