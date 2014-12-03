@@ -329,7 +329,8 @@ def modify_weights(msname, ionfactor, dryrun=False, ntot=None, trim_start=True):
 
 class Band(object):
     """The Band object contains parameters needed for each band (MS)."""
-    def __init__(self, MSfile, timecorr, block, solint, ionfactor, ncores, resume):
+    def __init__(self, MSfile, timecorr, block, solint, ionfactor, ncores,
+        resume, parset):
         self.file = MSfile
         self.msname = self.file.split('/')[-1]
         sw = pt.table(self.file + '/SPECTRAL_WINDOW', ack=False)
@@ -352,6 +353,7 @@ class Band(object):
         self.ncores = ncores
         self.resume = resume
         self.solint = solint
+        self.parset = parset
 
 
 class Chunk(object):
