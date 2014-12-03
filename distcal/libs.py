@@ -143,7 +143,9 @@ def makeChunks(band):
         for c in range(nsols):
             chunk_obj = Chunk(dataset)
             chunk_obj.chunk = c
-            chunk_obj.outdir = outdir
+            chunk_obj.outdir = '{1}_temp'.format(os.path.basename(chunk_obj.dataset))
+            if not os.path.exists(chunk_obj.outdir):
+                os.mkdir(chunk_obj.outdir)
             if c < chunk_mid_start:
                 chunk_obj.trim_start = True
                 chunk_obj.t0 = 0.0 # hours
@@ -185,12 +187,11 @@ def makeChunks(band):
                 if os.path.exists(chunk_obj.state_file):
                     chunk_list.remove(chunk_obj)
             if len(chunk_list) > 0:
-                log.info('Resuming time-correlated calibration for {0}...'.format(msname))
                 log.debug('Chunks remaining to be calibrated:')
                 for chunk_obj in chunk_list:
                     log.debug('  Solution #{0}'.format(chunk_obj.chunk))
             else:
-                log.info('Peeling complete for {0}.'.format(msname))
+                log.info('Calibration complete for {0}.'.format(msname))
 
         return chunk_list, chunk_list_orig
     except Exception as e:
@@ -331,11 +332,9 @@ def modify_weights(msname, ionfactor, dryrun=False, ntot=None, trim_start=True):
 
 class Band(object):
     """The Band object contains parameters needed for each band (MS)."""
-    def __init__(self, MSfile, outdir, timecorr, block, solint, ionfactor, ncores, resume):
+    def __init__(self, MSfile, timecorr, block, solint, ionfactor, ncores, resume):
         self.file = MSfile
-        self.outdir = outdir
         self.msname = self.file.split('/')[-1]
-        self.peeled_file = "{0}/{1}.peeled".format(self.outdir, self.msname)
         sw = pt.table(self.file + '/SPECTRAL_WINDOW', ack=False)
         self.freq = sw.col('REF_FREQUENCY')[0]
         sw.close()
