@@ -70,7 +70,7 @@ def makeChunks(band):
     # Wrap everything in a try-except block to be sure any exception is caught
     try:
         dataset = band.msname
-        blockl = band.block_length_nsols
+        blockl = band.sol_block
         solint = band.solint
         ionfactor = band.ionfactor
         parset = band.parset
@@ -86,20 +86,25 @@ def makeChunks(band):
         t.close()
 
         # Calculate various intervals
-        if ionfactor is not None:
+        if band.timecorr:
             fwhm_min, fwhm_max = modify_weights(msname, ionfactor, dryrun=True) # s
-            if time_block is None:
+            if blockl is None:
                 # Set blockl to enclose the max FWHM and be divisible by 2 and by solint
                 blockl = int(np.ceil(fwhm_max / timepersample / 2.0 / solint) * 2 * solint)
+        else:
+            if blockl is None:
+                # Set blockl to get one chunk per core
+                blockl = int(np.ceil(trows / float(solint) / band.ncores))
+
         tdiff = solint * timepersample / 3600. # difference between chunk start times in hours
         tlen = timepersample * np.float(blockl) / 3600. # length of block in hours
-        if ionfactor is None:
-            nsols = int(np.ceil(trows / float(solint) / blockl)) # number of solutions/chunks
+        if not band.timecorr:
+            nsols = int(np.ceil(trows / float(solint) / blockl)) # number of chunks
         else:
-            nsols = int(np.ceil(trows / float(solint))) # number of solutions/chunks
+            nsols = int(np.ceil(trows / float(solint))) # number of solutions
 
-        if ionfactor is not None:
-            log.info('Performing time-correlated peeling for {0}...\n'
+        if band.timecorr:
+            log.info('Performing distributed time-correlated calibration for {0}...\n'
                 '      Time per sample: {1} (s)\n'
                 '      Samples in total: {2}\n'
                 '      Block size: {3} (samples)\n'
@@ -122,12 +127,12 @@ def makeChunks(band):
 
 
         # Update cellsize and chunk size of parset
-        if ionfactor is not None:
+        if band.timecorr:
             parset = update_parset(parset)
 
         # Set up the chunks
         chunk_list = []
-        if ionfactor is None:
+        if not band.timecorr:
             chunk_mid_start = 0
             chunk_mid_end = nsols
             tdiff = tlen
@@ -208,9 +213,8 @@ def runChunk(chunk):
         split_ms(chunk.dataset, chunk.output, chunk.t0, chunk.t1)
 
         # Copy over instrument db to chunk in case it's needed
-        if chunk.ionfactor is None:
-            subprocess.call('cp -r {0} {1}/instrument'.
-                format(chunk.input_instrument, chunk.output), shell=True)
+        subprocess.call('cp -r {0} {1}/instrument'.
+            format(chunk.input_instrument, chunk.output), shell=True)
 
         # Calibrate
         calibrateChunk(chunk)
@@ -327,7 +331,7 @@ def modify_weights(msname, ionfactor, dryrun=False, ntot=None, trim_start=True):
 
 class Band(object):
     """The Band object contains parameters needed for each band (MS)."""
-    def __init__(self, MSfile, outdir, timecorr, block, ionfactor, ncores, resume):
+    def __init__(self, MSfile, outdir, timecorr, block, solint, ionfactor, ncores, resume):
         self.file = MSfile
         self.outdir = outdir
         self.msname = self.file.split('/')[-1]
@@ -346,11 +350,12 @@ class Band(object):
         ant.close()
         self.fwhm_deg = 1.1*((3.0e8/self.freq)/diam)*180./np.pi
         self.name = str(self.freq)
-        self.use_timecorr = timecorr
-        self.time_block = block
+        self.timecorr = timecorr
+        self.sol_block = block
         self.ionfactor = ionfactor
-        self.ncores_per_cal = ncores
+        self.ncores = ncores
         self.resume = resume
+        self.solint = solint
 
 
 class Chunk(object):
