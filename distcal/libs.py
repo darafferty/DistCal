@@ -205,15 +205,13 @@ def runChunk(chunk):
     """
     Calibrate a single chunk
     """
-    logfilename = band.msname + '.distcal.log'
-    init_logger(logfilename)
     log = logging.getLogger("DistCal.runChunk")
     time.sleep(chunk.start_delay)
 
     # Wrap everything in a try-except block to be sure any exception is caught
     try:
         # Split the dataset into parts
-        log.info(chunk.dataset, chunk.output, chunk.t0, chunk.t1)
+        log.info('{0}, {1}, {2}, {3}'.format(chunk.dataset, chunk.output, chunk.t0, chunk.t1))
         split_ms(chunk.dataset, chunk.output, chunk.t0, chunk.t1)
 
         # Copy over instrument db to chunk in case it's needed
@@ -290,8 +288,6 @@ def split_ms(msin, msout, start_out, end_out):
 
 def modify_weights(msname, ionfactor, dryrun=False, ntot=None, trim_start=True):
     """Modifies the WEIGHTS column of the input MS"""
-    logfilename = msname + '.distcal.log'
-    init_logger(logfilename)
     log = logging.getLogger("DistCal.modWeights")
 
     t = pt.table(msname, readonly=False, ack=False)
@@ -338,8 +334,6 @@ def collectSols(band, chunk_list):
     """
     Copy over the solutions to the final output parmdb
     """
-    logfilename = band.msname + '.distcal.log'
-    init_logger(logfilename)
     log = logging.getLogger("DistCal.collectSols")
 
     try:
