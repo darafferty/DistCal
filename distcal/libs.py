@@ -62,9 +62,8 @@ def makeChunks(band):
     """
     Returns list of chunk objects input band object
     """
-    if band.init_logger:
-        logfilename = band.msname + '.distcal.log'
-        init_logger(logfilename)
+    logfilename = band.msname + '.distcal.log'
+    init_logger(logfilename)
     log = logging.getLogger("DistCal.makeChunks")
 
     # Wrap everything in a try-except block to be sure any exception is caught
@@ -202,9 +201,8 @@ def runChunk(chunk):
     """
     Calibrate a chunk
     """
-    if band.init_logger:
-        logfilename = band.msname + '.distcal.log'
-        init_logger(logfilename)
+    logfilename = band.msname + '.distcal.log'
+    init_logger(logfilename)
     log = logging.getLogger("DistCal.runChunks")
     time.sleep(chunk.start_delay)
 
@@ -285,9 +283,8 @@ def split_ms(msin, msout, start_out, end_out):
 
 def modify_weights(msname, ionfactor, dryrun=False, ntot=None, trim_start=True):
     """Modifies the WEIGHTS column of the input MS"""
-    if band.init_logger:
-        logfilename = band.msname + '.distcal.log'
-        init_logger(logfilename)
+    logfilename = band.msname + '.distcal.log'
+    init_logger(logfilename)
     log = logging.getLogger("DistCal.modWeights")
 
     t = pt.table(msname, readonly=False, ack=False)
