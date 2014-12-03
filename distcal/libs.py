@@ -356,7 +356,7 @@ class Band(object):
         self.solint = solint
         self.parset = parset
         self.input_parmdb = parmdb
-        band.skymodel = skymodel
+        self.skymodel = skymodel
 
 
 class Chunk(object):
