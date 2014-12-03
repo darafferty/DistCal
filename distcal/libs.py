@@ -213,11 +213,11 @@ def runChunk(chunk):
     # Wrap everything in a try-except block to be sure any exception is caught
     try:
         # Split the dataset into parts
-        print(chunk.dataset, chunk.output, chunk.t0, chunk.t1)
+        log.info(chunk.dataset, chunk.output, chunk.t0, chunk.t1)
         split_ms(chunk.dataset, chunk.output, chunk.t0, chunk.t1)
 
         # Copy over instrument db to chunk in case it's needed
-        print(chunk.input_instrument)
+        log.info(chunk.input_instrument)
         if chunk.input_instrument is not None:
             subprocess.call('cp -r {0} {1}/instrument'.
                 format(chunk.input_instrument, chunk.output), shell=True)
