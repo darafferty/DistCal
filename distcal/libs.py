@@ -111,7 +111,7 @@ def makeChunks(band):
                 '      Solution interval: {5} (samples)\n'
                 '      Number of solutions: {6}\n'
                 '      Ionfactor: {7}\n'
-                '      FWHM range: {8} - {9} (s)'.format(msname, timepersample,
+                '      FWHM range: {8} - {9} (s)'.format(dataset, timepersample,
                 trows, blockl, tlen*3600.0, solint, nsols, ionfactor, fwhm_min, fwhm_max))
         else:
             log.info('Performing distributed calibration for {0}...\n'
@@ -121,7 +121,7 @@ def makeChunks(band):
                 '                  {4} (s)\n'
                 '      Solution interval: {5} (samples)\n'
                 '      Number of solutions: {6}\n'
-                '      Ionfactor: {7}'.format(msname, timepersample,
+                '      Ionfactor: {7}'.format(dataset, timepersample,
                 trows, blockl, tlen*3600.0, solint, nsols, ionfactor))
 
 
@@ -190,7 +190,7 @@ def makeChunks(band):
                 for chunk_obj in chunk_list:
                     log.debug('  Solution #{0}'.format(chunk_obj.chunk))
             else:
-                log.info('Calibration complete for {0}.'.format(msname))
+                log.info('Calibration complete for {0}.'.format(dataset))
 
         return chunk_list, chunk_list_orig
     except Exception as e:
@@ -283,7 +283,7 @@ def split_ms(msin, msout, start_out, end_out):
 
 def modify_weights(msname, ionfactor, dryrun=False, ntot=None, trim_start=True):
     """Modifies the WEIGHTS column of the input MS"""
-    logfilename = band.msname + '.distcal.log'
+    logfilename = msname + '.distcal.log'
     init_logger(logfilename)
     log = logging.getLogger("DistCal.modWeights")
 
