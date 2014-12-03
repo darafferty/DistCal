@@ -28,7 +28,7 @@ def calibrate(MSFile, parset, skymodel, ncores=6, solint=1, parmdb='instrument',
     lb.sync_import('from distcal.libs import *')
 
     band = Band(MSFile, timecorr, block, solint, ionfactor, len(lb.rc), resume,
-        parset)
+        parset, skymodel, parmdb)
     chunk_list, chunk_list_full = makeChunks(band)
 
     if chunk_list is None or chunk_list_full is None:

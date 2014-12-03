@@ -73,6 +73,7 @@ def makeChunks(band):
         solint = band.solint
         ionfactor = band.ionfactor
         parset = band.parset
+        skymodel = band.skymodel
         if solint < 1:
             solint = 1
 
@@ -169,7 +170,7 @@ def makeChunks(band):
             range_end = range_start + int(np.ceil(blockl/solint))
             chunk_obj.solrange = range(range_start, range_end)
             chunk_obj.output = chunk_obj.outdir + '/part' + str(chunk_obj.chunk) + os.path.basename(chunk_obj.dataset)
-            chunk_obj.input_instrument = instrument_orig
+            chunk_obj.input_instrument = band.input_parmdb
             chunk_obj.output_instrument = '{0}/parmdbs/part{1}{2}_instrument'.format(chunk_obj.outdir,
                     chunk_obj.chunk, os.path.basename(chunk_obj.dataset))
             chunk_obj.state_file = '{0}/state/part{1}{2}.done'.format(chunk_obj.outdir,
@@ -211,8 +212,9 @@ def runChunk(chunk):
         split_ms(chunk.dataset, chunk.output, chunk.t0, chunk.t1)
 
         # Copy over instrument db to chunk in case it's needed
-        subprocess.call('cp -r {0} {1}/instrument'.
-            format(chunk.input_instrument, chunk.output), shell=True)
+        if chunk.input_instrument is not None:
+            subprocess.call('cp -r {0} {1}/instrument'.
+                format(chunk.input_instrument, chunk.output), shell=True)
 
         # Calibrate
         calibrateChunk(chunk)
@@ -329,7 +331,7 @@ def modify_weights(msname, ionfactor, dryrun=False, ntot=None, trim_start=True):
 class Band(object):
     """The Band object contains parameters needed for each band (MS)."""
     def __init__(self, MSfile, timecorr, block, solint, ionfactor, ncores,
-        resume, parset):
+        resume, parset, skymodel, parmdb):
         self.file = MSfile
         self.msname = self.file.split('/')[-1]
         sw = pt.table(self.file + '/SPECTRAL_WINDOW', ack=False)
@@ -353,6 +355,8 @@ class Band(object):
         self.resume = resume
         self.solint = solint
         self.parset = parset
+        self.input_parmdb = parmdb
+        band.skymodel = skymodel
 
 
 class Chunk(object):
