@@ -24,6 +24,31 @@ import copy
 import socket
 import time
 
+
+def init_logger(logfilename, debug=False):
+    if debug:
+        logging.root.setLevel(logging.DEBUG)
+    else:
+        logging.root.setLevel(logging.INFO)
+
+    # Remove any existing handlers
+    while len(logging.root.handlers) > 0:
+        logging.root.removeHandler(logging.root.handlers[0])
+
+    # File handler
+    fh = logging.FileHandler(logfilename, 'a')
+    fmt = MultiLineFormatter('%(asctime)s:: %(name)-6s:: %(levelname)-8s: '
+        '%(message)s', datefmt='%a %d-%m-%Y %H:%M:%S')
+    fh.setFormatter(fmt)
+    logging.root.addHandler(fh)
+
+    # Console handler
+    ch = logging.StreamHandler()
+    fmt = logging.Formatter('\033[31;1m%(levelname)s\033[0m: %(message)s')
+    ch.setFormatter(fmt)
+    logging.root.addHandler(ch)
+
+
 def makeChunks(band):
     """
     Returns list of chunk objects input band object
