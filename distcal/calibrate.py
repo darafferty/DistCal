@@ -11,7 +11,7 @@ import lofar.parameterset
 import pyrap.tables
 import loadbalance
 
-def calibrate(MSfile, parset, skymodel, ncores=6, solint=1, parmdb='instrument',
+def calibrate(MSFile, parset, skymodel, ncores=6, solint=1, parmdb='instrument',
     resume=False, clobber=False, timecorr=False, block=None, ionfactor=None):
     """
     Runs BBS in distributed manner with or without time-correlated solve
@@ -25,7 +25,7 @@ def calibrate(MSfile, parset, skymodel, ncores=6, solint=1, parmdb='instrument',
         loglevel=logging.DEBUG)
     lb.sync_import('from distcal.libs import *')
 
-    band = Band(MSfile, outdir, timecorr, block, ionfactor, ncores, resume)
+    band = Band(MSFile, outdir, timecorr, block, ionfactor, ncores, resume)
     chunk_list, chunk_list_full = makeChunks(band)
 
     if chunk_list is None or chunk_list_full is None:
@@ -39,7 +39,7 @@ def calibrate(MSfile, parset, skymodel, ncores=6, solint=1, parmdb='instrument',
         # Copy over the solutions to the final output parmdb
         try:
             log.info('Copying distributed solutions to final parmdb...')
-            instrument_out = '{0}/{1}'.format(MSfile, parmdb)
+            instrument_out = '{0}/{1}'.format(MSFile, parmdb)
             os.system("rm %s -rf" % instrument_out)
             pdb_out = lofar.parmdb.parmdb(instrument_out, create=True)
             for j, chunk_obj in enumerate(chunk_list_orig):
