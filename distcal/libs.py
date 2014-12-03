@@ -145,6 +145,10 @@ def makeChunks(band):
             chunk_obj.outdir = '{0}_temp'.format(chunk_obj.dataset)
             if not os.path.exists(chunk_obj.outdir):
                 os.mkdir(chunk_obj.outdir)
+            if not os.path.exists(chunk_obj.outdir+'/parmdbs'):
+                os.mkdir(chunk_obj.outdir+'/parmdbs')
+            if not os.path.exists(chunk_obj.outdir+'/state'):
+                os.mkdir(chunk_obj.outdir+'/state')
             if c < chunk_mid_start:
                 chunk_obj.trim_start = True
                 chunk_obj.t0 = 0.0 # hours
@@ -222,7 +226,7 @@ def runChunk(chunk):
         # Clean up, copying instrument parmdb for later collection
         subprocess.call('cp -r {0}/instrument {1}'.
             format(chunk.output, chunk.output_instrument), shell=True)
-        shutil.rmtree(chunk.output)
+#         shutil.rmtree(chunk.output)
 
         # Record successful completion
         success_file = chunk.state_file
@@ -338,7 +342,7 @@ def collectSols(band, chunk_list):
 
     try:
         log.info('Copying distributed solutions to final parmdb...')
-        instrument_out = band.output_parmdb
+        instrument_out = band.file + '/' + band.output_parmdb
         os.system("rm %s -rf" % instrument_out)
         pdb_out = lofar.parmdb.parmdb(instrument_out, create=True)
         for j, chunk_obj in enumerate(chunk_list):
