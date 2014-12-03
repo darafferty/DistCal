@@ -1,6 +1,15 @@
 """
 Functions to perform distributed calibration
 """
+import logging
+import os
+import sys
+import glob
+import numpy
+import lofar.parmdb
+import lofar.parameterset
+import pyrap.tables
+import loadbalance
 
 def calibrate(MSfile, parset, skymodel, ncores=6, solint=1, parmdb='instrument',
     resume=False, clobber=False, timecorr=False, block=None, ionfactor=None):

@@ -1,6 +1,28 @@
 """
 Functions and classes needed for distributed calibration
 """
+import logging
+import os
+import commands
+import subprocess
+import glob
+import shutil
+import sys
+import numpy as np
+import pyrap.tables as pt
+import scipy.signal
+import lofar.parameterset
+import lofar.parmdb
+import lofar.expion.parmdbmain
+import multiprocessing
+import multiprocessing.pool
+from numpy import sum, sqrt, min, max, any
+from numpy import argmax, argmin, mean, abs
+from numpy import int32 as Nint
+from numpy import float32 as Nfloat
+import copy
+import socket
+import time
 
 def makeChunks(band):
     """
