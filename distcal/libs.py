@@ -86,7 +86,7 @@ def makeChunks(band):
 
         # Calculate various intervals
         if band.timecorr:
-            fwhm_min, fwhm_max = modify_weights(msname, ionfactor, dryrun=True) # s
+            fwhm_min, fwhm_max = modify_weights(dataset, ionfactor, dryrun=True) # s
             if blockl is None:
                 # Set blockl to enclose the max FWHM and be divisible by 2 and by solint
                 blockl = int(np.ceil(fwhm_max / timepersample / 2.0 / solint) * 2 * solint)
