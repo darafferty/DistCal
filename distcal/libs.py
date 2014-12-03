@@ -164,7 +164,7 @@ def makeChunks(band):
             chunk_obj.ionfactor = ionfactor
             chunk_obj.parset = parset
             chunk_obj.skymodel = skymodel
-            chunk_obj.logname_root = logname_root + '_part' + str(c)
+            chunk_obj.logname_root = band.msname + '_part' + str(c)
             chunk_obj.solnum = chunk_obj.chunk
             range_start = chunk_obj.solnum*int(np.ceil(blockl/solint))
             range_end = range_start + int(np.ceil(blockl/solint))
