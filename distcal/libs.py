@@ -352,12 +352,11 @@ def collectSols(band, chunk_list):
                 continue
             log.info('  copying part{0}'.format(j))
             for parmname in pdb_part.getNames():
-                if j == 0 or 'Phase' in parmname:
-                    v = pdb_part.getValuesGrid(parmname)
-                    try:
-                        pdb_out.addValues(v)
-                    except:
-                        continue
+                v = pdb_part.getValuesGrid(parmname)
+                try:
+                    pdb_out.addValues(v)
+                except:
+                    continue
     except Exception as e:
         log.error(str(e))
 

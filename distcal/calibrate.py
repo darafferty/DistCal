@@ -13,7 +13,7 @@ import loadbalance
 from .libs import *
 
 
-def calibrate(MSFile, parset, skymodel, ncores=6, solint=1, parmdb='instrument',
+def calibrate(MSFile, parset, skymodel, ncores=6, solint=1, parmdb=None,
     resume=False, clobber=False, timecorr=False, block=None, ionfactor=1.0):
     """
     Runs BBS in distributed manner with or without time-correlated solve
