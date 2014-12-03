@@ -199,11 +199,11 @@ def makeChunks(band):
 
 def runChunk(chunk):
     """
-    Calibrate a chunk
+    Calibrate a single chunk
     """
     logfilename = band.msname + '.distcal.log'
     init_logger(logfilename)
-    log = logging.getLogger("DistCal.runChunks")
+    log = logging.getLogger("DistCal.runChunk")
     time.sleep(chunk.start_delay)
 
     # Wrap everything in a try-except block to be sure any exception is caught
@@ -328,6 +328,37 @@ def modify_weights(msname, ionfactor, dryrun=False, ntot=None, trim_start=True):
     return (min(fwhm_list), max(fwhm_list))
 
 
+def collectSols(band, chunk_list):
+    """
+    Copy over the solutions to the final output parmdb
+    """
+    logfilename = band.msname + '.distcal.log'
+    init_logger(logfilename)
+    log = logging.getLogger("DistCal.collectSols")
+
+    try:
+        log.info('Copying distributed solutions to final parmdb...')
+        instrument_out = band.output_parmdb
+        os.system("rm %s -rf" % instrument_out)
+        pdb_out = lofar.parmdb.parmdb(instrument_out, create=True)
+        for j, chunk_obj in enumerate(chunk_list):
+            chunk_instrument = chunk_obj.output_instrument
+            try:
+                pdb_part = lofar.parmdb.parmdb(chunk_instrument)
+            except:
+                continue
+            log.info('  copying part{0}'.format(j))
+            for parmname in pdb_part.getNames():
+                if j == 0 or 'Phase' in parmname:
+                    v = pdb_part.getValuesGrid(parmname)
+                    try:
+                        pdb_out.addValues(v)
+                    except:
+                        continue
+    except Exception as e:
+        log.error(str(e))
+
+
 class Band(object):
     """The Band object contains parameters needed for each band (MS)."""
     def __init__(self, MSfile, timecorr, block, solint, ionfactor, ncores,
@@ -356,6 +387,7 @@ class Band(object):
         self.solint = solint
         self.parset = parset
         self.input_parmdb = parmdb
+        self.output_parmdb = parmdb
         self.skymodel = skymodel
 
 
