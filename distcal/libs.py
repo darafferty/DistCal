@@ -264,8 +264,8 @@ def update_parset(parset):
     newlines = f.readlines()
     f.close()
     for i in range(len(newlines)):
-        if 'ChunkSize' in newlines[i] or 'CellSize.Time' in newlines[i] or
-            'CellChunkSize' in newlines[i]:
+        if ('ChunkSize' in newlines[i] or 'CellSize.Time' in newlines[i] or
+            'CellChunkSize' in newlines[i]):
             vars = newlines[i].split('=')
             newlines[i] = vars[0] + ' =  0\n'
     f = open(updated_parset, 'w')
