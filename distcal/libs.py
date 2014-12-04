@@ -127,7 +127,7 @@ def makeChunks(band):
         tempdir = '{0}_temp'.format(dataset)
         if not os.path.exists(tempdir):
             os.mkdir(tempdir)
-        elif band.clobber:
+        elif band.clobber and not band.resume:
             log.info('Clobbering temp directory')
             os.system('rm -rf {0}'.format(tempdir))
             os.mkdir(tempdir)
