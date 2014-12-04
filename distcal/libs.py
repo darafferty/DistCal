@@ -220,7 +220,6 @@ def runChunk(chunk):
         split_ms(chunk.dataset, chunk.output, chunk.t0, chunk.t1)
 
         # Copy over instrument db to chunk in case it's needed
-        log.info(chunk.input_instrument)
         if chunk.input_instrument is not None:
             subprocess.call('cp -r {0} {1}/instrument'.
                 format(chunk.input_instrument, chunk.output), shell=True)
@@ -231,6 +230,7 @@ def runChunk(chunk):
         # Clean up, copying instrument parmdb for later collection
         subprocess.call('cp -r {0}/instrument {1}'.
             format(chunk.output, chunk.output_instrument), shell=True)
+        subprocess.call('rm calibrate-stand-alone_*.log', shell=True)
         shutil.rmtree(chunk.output)
 
         # Record successful completion
@@ -249,9 +249,14 @@ def calibrateChunk(chunk):
             ntot=chunk.ntot, trim_start=chunk.trim_start)
 
     # Run BBS
-    subprocess.call("calibrate-stand-alone {0} {1} {2} > {3}/logs/"
-        "{4}_peeling_calibrate_timecorr.log 2>&1".format(chunk.output, chunk.parset,
-        chunk.skymodel, chunk.outdir, chunk.logname_root), shell=True)
+    if chunk.input_instrument is not None:
+        subprocess.call("calibrate-stand-alone {0} {1} {2} > {3}/logs/"
+            "{4}_peeling_calibrate_timecorr.log 2>&1".format(chunk.output, chunk.parset,
+            chunk.skymodel, chunk.outdir, chunk.logname_root), shell=True)
+    else:
+        subprocess.call("calibrate-stand-alone -f {0} {1} {2} > {3}/logs/"
+            "{4}_peeling_calibrate_timecorr.log 2>&1".format(chunk.output, chunk.parset,
+            chunk.skymodel, chunk.outdir, chunk.logname_root), shell=True)
 
 
 def update_parset(parset):
