@@ -392,14 +392,14 @@ def collectSols(band, chunk_list):
             # Due to differing grid, we need to run BBS at the right grid to
             # generate the instrumentdb
             quick_parset = update_parset(band.parset, quick=True)
-            instrument_quick = band.output_parmdb + '_quick'
+            instrument_quick = 'instrument_quick'
             os.system("rm %s -rf" % instrument_quick)
             subprocess.call("calibrate-stand-alone --parmdb-name {0} {1} {2} {3}".format(
                 instrument_quick, band.file, quick_parset, band.skymodel), shell=True)
             instrument_out = band.file + '/' + band.output_parmdb
             os.system("rm %s -rf" % instrument_out)
 
-            pdb = lofar.parmdb.parmdb(instrument_quick)
+            pdb = lofar.parmdb.parmdb(band.file+'/'+instrument_quick)
             parms = pdb.getValuesGrid("*")
             for chunk_obj in chunk_list_orig:
                 chunk_instrument = chunk_obj.output_instrument
