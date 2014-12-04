@@ -392,7 +392,7 @@ def collectSols(band, chunk_list):
             # Due to differing grid, we need to run BBS at the right grid to
             # generate the instrumentdb
             quick_parset = update_parset(band.parset, quick=True)
-            instrument_quick = band.file + '/' + band.output_parmdb + '_quick'
+            instrument_quick = band.output_parmdb + '_quick'
             os.system("rm %s -rf" % instrument_quick)
             subprocess.call("calibrate-stand-alone --parmdb-name {0} {1} {2} {3}".format(
                 instrument_quick, band.file, quick_parset, band.skymodel), shell=True)
