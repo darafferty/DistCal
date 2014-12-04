@@ -401,7 +401,7 @@ def collectSols(band, chunk_list):
 
             pdb = lofar.parmdb.parmdb(band.file+'/'+instrument_quick)
             parms = pdb.getValuesGrid("*")
-            for chunk_obj in chunk_list_orig:
+            for chunk_obj in chunk_list:
                 chunk_instrument = chunk_obj.output_instrument
                 try:
                     pdb_part = lofar.parmdb.parmdb(chunk_instrument)
