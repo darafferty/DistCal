@@ -394,8 +394,8 @@ def collectSols(band, chunk_list):
             quick_parset = update_parset(band.parset, quick=True)
             instrument_quick = band.file + '/' + band.output_parmdb + '_quick'
             os.system("rm %s -rf" % instrument_quick)
-            subprocess.call("calibrate-stand-alone {0} {1} {2} --parmdb {3}".format(
-                band.file, quick_parset, band.skymodel, instrument_quick), shell=True)
+            subprocess.call("calibrate-stand-alone --parmdb={0} {1} {2} {3}".format(
+                instrument_quick, band.file, quick_parset, band.skymodel), shell=True)
             instrument_out = band.file + '/' + band.output_parmdb
             os.system("rm %s -rf" % instrument_out)
 
