@@ -251,7 +251,7 @@ def calibrateChunk(chunk):
         fwhm_min, fwhm_max = modify_weights(chunk.output, chunk.ionfactor,
             ntot=chunk.ntot, trim_start=chunk.trim_start)
 
-    if chunk.solver.lower() = 'bbs':
+    if chunk.solver.lower() == 'bbs':
         # Run BBS
         if chunk.input_instrument is not None:
             subprocess.call("calibrate-stand-alone {0} {1} {2} > {3}/logs/"
@@ -261,7 +261,7 @@ def calibrateChunk(chunk):
             subprocess.call("calibrate-stand-alone -f {0} {1} {2} > {3}/logs/"
                 "{4}_calibrate.log 2>&1".format(chunk.output, chunk.parset,
                 chunk.skymodel, chunk.outdir, chunk.logname_root), shell=True)
-    elif chunk.solver.lower() = 'dppp' or chunk.solver.lower() = 'ndppp':
+    elif chunk.solver.lower() == 'dppp' or chunk.solver.lower() == 'ndppp':
         # Run NDPPP
         subprocess.call("NDPPP {0} > {1}/logs/{2}_calibrate.log 2>&1".format(parset,
             chunk.outdir, chunk.logname_root), shell=True)
