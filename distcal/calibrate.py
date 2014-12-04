@@ -23,11 +23,11 @@ def calibrate(MSFile, parset, skymodel, ncores=6, solint=1, parmdb=None,
     log = logging.getLogger("DistCal.calibrate")
 
     # Start iPython engines
-    lb = loadbalance.LoadBalance(ppn=ncores, logfile=None,
-        loglevel=logging.DEBUG)
+    lb = loadbalance.LoadBalance(ppn=ncores, logfile=None)
     lb.sync_import('from distcal.libs import *')
+    nengines = len(lb.rc)
 
-    band = Band(MSFile, timecorr, block, solint, ionfactor, len(lb.rc), resume,
+    band = Band(MSFile, timecorr, block, solint, ionfactor, nengines, resume,
         parset, skymodel, parmdb, clobber)
     chunk_list, chunk_list_full = makeChunks(band)
 
@@ -35,8 +35,10 @@ def calibrate(MSFile, parset, skymodel, ncores=6, solint=1, parmdb=None,
         return
     else:
         if len(chunk_list) > 0:
-            for i, chunk in enumerate(chunk_list):
-                chunk.start_delay = i * 2.0 # start delay in seconds to avoid too much disk IO
+            # Give all chunks a random start delay to avoid too much disk IO
+            delays = numpy.random.random_sample(len(chunk_list)) * 2.0 # seconds
+            for chunk, delay in zip(chunk_list, delays):
+                chunk.start_delay = delay
             lb.map(runChunk, chunk_list)
 
         collectSols(band, chunk_list_full)
