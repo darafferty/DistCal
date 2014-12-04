@@ -128,6 +128,7 @@ def makeChunks(band):
         if not os.path.exists(tempdir):
             os.mkdir(tempdir)
         elif band.clobber:
+            log.infor('Clobbering temp directory')
             os.system('rm -rf {0}'.format(tempdir))
             os.mkdir(tempdir)
         if not os.path.exists(tempdir+'/parmdbs'):
