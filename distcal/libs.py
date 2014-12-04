@@ -188,6 +188,8 @@ def makeChunks(band):
                     chunk_obj.chunk, os.path.basename(chunk_obj.dataset))
             chunk_obj.ntot = blockl
             chunk_obj.start_delay = 0.0
+            chunk_obj.solver = band.solver
+            chunk_obj.timecorr = band.timecorr
             chunk_list.append(chunk_obj)
 
         chunk_list_orig = chunk_list[:]
@@ -244,39 +246,55 @@ def runChunk(chunk):
 
 def calibrateChunk(chunk):
     """Calibrates a single MS chunk using a time-correlated solve"""
-    if chunk.ionfactor is not None:
+    if chunk.timecorr:
         # Modify weights
         fwhm_min, fwhm_max = modify_weights(chunk.output, chunk.ionfactor,
             ntot=chunk.ntot, trim_start=chunk.trim_start)
 
-    # Run BBS
-    if chunk.input_instrument is not None:
-        subprocess.call("calibrate-stand-alone {0} {1} {2} > {3}/logs/"
-            "{4}_peeling_calibrate_timecorr.log 2>&1".format(chunk.output, chunk.parset,
-            chunk.skymodel, chunk.outdir, chunk.logname_root), shell=True)
+    if chunk.solver.lower() = 'bbs':
+        # Run BBS
+        if chunk.input_instrument is not None:
+            subprocess.call("calibrate-stand-alone {0} {1} {2} > {3}/logs/"
+                "{4}_calibrate.log 2>&1".format(chunk.output, chunk.parset,
+                chunk.skymodel, chunk.outdir, chunk.logname_root), shell=True)
+        else:
+            subprocess.call("calibrate-stand-alone -f {0} {1} {2} > {3}/logs/"
+                "{4}_calibrate.log 2>&1".format(chunk.output, chunk.parset,
+                chunk.skymodel, chunk.outdir, chunk.logname_root), shell=True)
+    elif chunk.solver.lower() = 'dppp' or chunk.solver.lower() = 'ndppp':
+        # Run NDPPP
+        subprocess.call("NDPPP {0} > {1}/logs/{2}_calibrate.log 2>&1".format(parset,
+            chunk.outdir, chunk.logname_root), shell=True)
     else:
-        subprocess.call("calibrate-stand-alone -f {0} {1} {2} > {3}/logs/"
-            "{4}_peeling_calibrate_timecorr.log 2>&1".format(chunk.output, chunk.parset,
-            chunk.skymodel, chunk.outdir, chunk.logname_root), shell=True)
+        raise ValueError('Solver not understood')
 
 
-def update_parset(parset):
+def update_parset(parset, quick=False):
     """
     Update the parset to set cellsize and chunksize = 0
     where a value of 0 forces all time/freq/cell intervals to be considered
     """
-    updated_parset = parset + '_timecorr'
     f = open(parset, 'r')
     newlines = f.readlines()
     f.close()
-    for i in range(len(newlines)):
-        if ('ChunkSize' in newlines[i] or 'CellSize.Time' in newlines[i] or
-            'CellChunkSize' in newlines[i]):
-            vars = newlines[i].split('=')
-            newlines[i] = vars[0] + ' =  0\n'
+    if not quick:
+        updated_parset = parset + '_timecorr'
+        for i in range(len(newlines)):
+            if ('ChunkSize' in newlines[i] or 'CellSize.Time' in newlines[i] or
+                'CellChunkSize' in newlines[i]):
+                vars = newlines[i].split('=')
+                newlines[i] = vars[0] + ' =  0\n'
+    else:
+        updated_parset = parset + '_quick'
+        for i in range(len(newlines)):
+            if 'MaxIter' in newlines[i]:
+                vars = newlines[i].split('=')
+                newlines[i] = vars[0] + ' =  1\n'
+
     f = open(updated_parset, 'w')
     f.writelines(newlines)
     f.close()
+
     return updated_parset
 
 
@@ -346,32 +364,72 @@ def collectSols(band, chunk_list):
     """
     log = logging.getLogger("DistCal.collectSols")
 
-    try:
-        log.info('Copying distributed solutions to final parmdb...')
-        instrument_out = band.file + '/' + band.output_parmdb
-        os.system("rm %s -rf" % instrument_out)
-        pdb_out = lofar.parmdb.parmdb(instrument_out, create=True)
-        for j, chunk_obj in enumerate(chunk_list):
-            chunk_instrument = chunk_obj.output_instrument
-            try:
-                pdb_part = lofar.parmdb.parmdb(chunk_instrument)
-            except:
-                continue
-            log.info('  copying part{0}'.format(j))
-            for parmname in pdb_part.getNames():
-                v = pdb_part.getValuesGrid(parmname)
+    if not band.timecorr:
+        try:
+            log.info('Copying distributed solutions to final parmdb...')
+            instrument_out = band.file + '/' + band.output_parmdb
+            os.system("rm %s -rf" % instrument_out)
+            pdb_out = lofar.parmdb.parmdb(instrument_out, create=True)
+            for j, chunk_obj in enumerate(chunk_list):
+                chunk_instrument = chunk_obj.output_instrument
                 try:
-                    pdb_out.addValues(v)
+                    pdb_part = lofar.parmdb.parmdb(chunk_instrument)
                 except:
                     continue
-    except Exception as e:
-        log.error(str(e))
+                log.debug('  copying part{0}'.format(j))
+                for parmname in pdb_part.getNames():
+                    v = pdb_part.getValuesGrid(parmname)
+                    try:
+                        pdb_out.addValues(v)
+                    except:
+                        continue
+        except Exception as e:
+            log.error(str(e))
+    else:
+        try:
+            log.info('Copying time-correlated solutions to output parmdb...')
+
+            # Due to differing grid, we need to run BBS at the right grid to
+            # generate the instrumentdb
+            quick_parset = update_parset(band.parset, quick=True)
+            instrument_quick = band.file + '/' + band.output_parmdb + '_quick'
+            os.system("rm %s -rf" % instrument_quick)
+            subprocess.call("calibrate-stand-alone {0} {1} {2} --parmdb {3}".format(
+                band.file, quick_parset, band.skymodel, instrument_quick), shell=True)
+            instrument_out = band.file + '/' + band.output_parmdb
+            os.system("rm %s -rf" % instrument_out)
+
+            pdb = lofar.parmdb.parmdb(instrument_quick)
+            parms = pdb.getValuesGrid("*")
+            for chunk_obj in chunk_list_orig:
+                chunk_instrument = chunk_obj.output_instrument
+                try:
+                    pdb_part = lofar.parmdb.parmdb(chunk_instrument)
+                except:
+                    continue
+                log.debug('  copying part{0}'.format(j))
+                parms_part = pdb_part.getValuesGrid("*")
+                keynames = parms_part.keys()
+
+                # Replace old value with new
+                for key in keynames:
+                # Hard-coded to look for Phase and/or TEC parms
+                # Presumably OK to use other parms with additional 'or' statments
+                    if 'Phase' in key or 'TEC' in key:
+                        parms[key]['values'][chunk_obj.solnum, 0] = np.copy(
+                            parms_part[key]['values'][0, 0])
+
+            # Add new values to final output parmdb
+            pdb_out = lofar.parmdb.parmdb(instrument_out, create=True)
+            pdb_out.addValues(parms)
+        except Exception as e:
+            log.error(str(e))
 
 
 class Band(object):
     """The Band object contains parameters needed for each band (MS)."""
     def __init__(self, MSfile, timecorr, block, solint, ionfactor, ncores,
-        resume, parset, skymodel, parmdb, clobber):
+        resume, parset, skymodel, parmdb, clobber, solver):
         self.file = MSfile
         self.msname = self.file.split('/')[-1]
         sw = pt.table(self.file + '/SPECTRAL_WINDOW', ack=False)
@@ -399,6 +457,7 @@ class Band(object):
         self.output_parmdb = 'instrument'
         self.skymodel = skymodel
         self.clobber = clobber
+        self.solver = solver
 
 
 class Chunk(object):
