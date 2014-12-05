@@ -140,7 +140,7 @@ def makeChunks(band):
 
         # Update cellsize and chunk size of parset
         if band.timecorr:
-            parset = update_parset(parset)
+            parset = update_parset(parset, solver=band.solver)
 
         # Set up the chunks
         chunk_list = []
@@ -263,13 +263,13 @@ def calibrateChunk(chunk):
                 chunk.skymodel, chunk.outdir, chunk.logname_root), shell=True)
     elif chunk.solver.lower() == 'dppp' or chunk.solver.lower() == 'ndppp':
         # Run NDPPP
-        subprocess.call("NDPPP {0} > {1}/logs/{2}_calibrate.log 2>&1".format(parset,
+        subprocess.call("NDPPP {0} msin={1} > {1}/logs/{2}_calibrate.log 2>&1".format(parset,
             chunk.outdir, chunk.logname_root), shell=True)
     else:
         raise ValueError('Solver not understood')
 
 
-def update_parset(parset, quick=False):
+def update_parset(parset, quick=False, solver='bbs'):
     """
     Update the parset to set cellsize and chunksize = 0
     where a value of 0 forces all time/freq/cell intervals to be considered
@@ -280,16 +280,31 @@ def update_parset(parset, quick=False):
     if not quick:
         updated_parset = parset + '_timecorr'
         for i in range(len(newlines)):
-            if ('ChunkSize' in newlines[i] or 'CellSize.Time' in newlines[i] or
-                'CellChunkSize' in newlines[i]):
-                vars = newlines[i].split('=')
-                newlines[i] = vars[0] + ' =  0\n'
+            if solver.lower() == 'bbs':
+                if ('ChunkSize' in newlines[i] or 'CellSize.Time' in newlines[i] or
+                    'CellChunkSize' in newlines[i]):
+                    vars = newlines[i].split('=')
+                    newlines[i] = vars[0] + ' =  0\n'
+            elif solver.lower() == 'dppp' or solver.lower() == 'ndppp':
+                if 'solint' in newlines[i]:
+                    vars = newlines[i].split('=')
+                    newlines[i] = vars[0] + ' =  0\n'
+            else:
+                raise ValueError('Solver not understood')
+
     else:
         updated_parset = parset + '_quick'
         for i in range(len(newlines)):
-            if 'MaxIter' in newlines[i]:
-                vars = newlines[i].split('=')
-                newlines[i] = vars[0] + ' =  1\n'
+            if solver.lower() == 'bbs':
+                if 'MaxIter' in newlines[i]:
+                    vars = newlines[i].split('=')
+                    newlines[i] = vars[0] + ' =  1\n'
+            elif solver.lower() == 'dppp' or solver.lower() == 'ndppp':
+                if 'maxiter' in newlines[i]:
+                    vars = newlines[i].split('=')
+                    newlines[i] = vars[0] + ' =  1\n'
+            else:
+                raise ValueError('Solver not understood')
 
     f = open(updated_parset, 'w')
     f.writelines(newlines)
@@ -394,6 +409,7 @@ def collectSols(band, chunk_list):
             quick_parset = update_parset(band.parset, quick=True)
             instrument_quick = 'instrument_quick'
             os.system("rm %s -rf" % instrument_quick)
+            log.debug('  creating instrument table')
             subprocess.call("calibrate-stand-alone --parmdb-name {0} {1} {2} {3}".format(
                 instrument_quick, band.file, quick_parset, band.skymodel), shell=True)
             instrument_out = band.file + '/' + band.output_parmdb
