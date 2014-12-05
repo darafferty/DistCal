@@ -376,7 +376,7 @@ def collectSols(band, chunk_list):
                     pdb_part = lofar.parmdb.parmdb(chunk_instrument)
                 except:
                     continue
-                log.debug('  copying part{0}'.format(j))
+                log.debug('  copying part {0}'.format(j))
                 for parmname in pdb_part.getNames():
                     v = pdb_part.getValuesGrid(parmname)
                     try:
@@ -407,7 +407,7 @@ def collectSols(band, chunk_list):
                     pdb_part = lofar.parmdb.parmdb(chunk_instrument)
                 except:
                     continue
-                log.debug('  copying part{0}'.format(j))
+                log.debug('  copying solution {0}'.format(chunk_obj.solnum))
                 parms_part = pdb_part.getValuesGrid("*")
                 keynames = parms_part.keys()
 
