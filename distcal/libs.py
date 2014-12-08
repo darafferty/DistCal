@@ -263,8 +263,8 @@ def calibrateChunk(chunk):
                 chunk.skymodel, chunk.outdir, chunk.logname_root), shell=True)
     elif chunk.solver.lower() == 'dppp' or chunk.solver.lower() == 'ndppp':
         # Run NDPPP
-        subprocess.call("NDPPP {0} msin={1} > {1}/logs/{2}_calibrate.log 2>&1".format(parset,
-            chunk.outdir, chunk.logname_root), shell=True)
+        subprocess.call("NDPPP {0} msin={1} solve.parmdb={1}/{2} > {3}/logs/{4}_calibrate.log 2>&1".format(parset,
+            chunk.output, 'instrument', chunk.outdir, chunk.logname_root), shell=True)
     else:
         raise ValueError('Solver not understood')
 
@@ -414,8 +414,8 @@ def collectSols(band, chunk_list):
                 subprocess.call("calibrate-stand-alone --parmdb-name {0} {1} {2} {3}".format(
                     instrument_quick, band.file, quick_parset, band.skymodel), shell=True)
             else:
-                subprocess.call("NDPPP {0} msin={1}".format(
-                    quick_parset, band.file), shell=True)
+                subprocess.call("NDPPP {0} msin={1} solve.parmdb={1}/{2}".format(
+                    quick_parset, band.file, instrument_quick), shell=True)
             instrument_out = band.file + '/' + band.output_parmdb
             os.system("rm %s -rf" % instrument_out)
 
