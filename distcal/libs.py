@@ -404,14 +404,18 @@ def collectSols(band, chunk_list):
         try:
             log.info('Copying time-correlated solutions to output parmdb...')
 
-            # Due to differing grid, we need to run BBS at the right grid to
+            # Due to differing grid, we need to calibrate at the right grid to
             # generate the instrumentdb
             quick_parset = update_parset(band.parset, quick=True)
             instrument_quick = 'instrument_quick'
             os.system("rm %s -rf" % instrument_quick)
             log.debug('  creating instrument table')
-            subprocess.call("calibrate-stand-alone --parmdb-name {0} {1} {2} {3}".format(
-                instrument_quick, band.file, quick_parset, band.skymodel), shell=True)
+            if band.solver.lower() == 'bbs':
+                subprocess.call("calibrate-stand-alone --parmdb-name {0} {1} {2} {3}".format(
+                    instrument_quick, band.file, quick_parset, band.skymodel), shell=True)
+            else:
+                subprocess.call("NDPPP {0} msin={1}".format(
+                    quick_parset, band.file), shell=True)
             instrument_out = band.file + '/' + band.output_parmdb
             os.system("rm %s -rf" % instrument_out)
 
