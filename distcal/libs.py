@@ -436,7 +436,7 @@ def collectSols(band, chunk_list):
                 for key in keynames:
                 # Hard-coded to look for Phase and/or TEC parms
                 # Presumably OK to use other parms with additional 'or' statments
-                    if 'Phase' in key or 'TEC' in key:
+                    if 'Phase' in key or 'TEC' in key or 'Real' in key or 'Imag' in key:
                         parms[key]['values'][chunk_obj.solnum, 0] = np.copy(
                             parms_part[key]['values'][0, 0])
 
