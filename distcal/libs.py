@@ -263,8 +263,9 @@ def calibrateChunk(chunk):
                 chunk.skymodel, chunk.outdir, chunk.logname_root), shell=True)
     elif chunk.solver.lower() == 'dppp' or chunk.solver.lower() == 'ndppp':
         # Run NDPPP
-        subprocess.call("NDPPP {0} msin={1} solve.parmdb={1}/{2} > {3}/logs/{4}_calibrate.log 2>&1".format(parset,
-            chunk.output, 'instrument', chunk.outdir, chunk.logname_root), shell=True)
+        subprocess.call("NDPPP {0} msin={1} solve.parmdb={1}/{2} > {3}/logs/"
+            "{4}_calibrate.log 2>&1".format(chunk.parset, chunk.output,
+            'instrument', chunk.outdir, chunk.logname_root), shell=True)
     else:
         raise ValueError('Solver not understood')
 
